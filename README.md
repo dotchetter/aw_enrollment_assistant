@@ -1,5 +1,6 @@
 # aw_enrollment_assistant
 Batch-file tool to automate agent enrollment for Windows to Airwatch
+Language in prompts: Swedish
 
 Simple batch-program that streamlines the BOYD or STAGING enrollment flow with Windows and AirWatch.
 Uses 'AirWatchAgent.msi' by VMWare to pass on commandline switches.
