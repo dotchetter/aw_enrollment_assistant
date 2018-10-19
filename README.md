@@ -14,7 +14,7 @@ The tool takes following conditions in to consideration:
 
 How to use
 
-1. Declare variables line 32 - 43. These strings will be passed to "AirWatchAgent.msi". 
+1. Declare variables line 27 - 37. These strings will be passed to "AirWatchAgent.msi". 
    Read available switches here: 
    https://docs.vmware.com/en/VMware-AirWatch/9.1/vmware-airwatch-guides-91/GUID-AW91-Enroll_SilentCommands.html
 
