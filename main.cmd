@@ -5,14 +5,13 @@
 :: File version 1.9.1
 :: Syntax: Batch, Lang: English
 :: May the force be with you
-:: Author: dotchetter
 
 :: Compile this file with bat2exe converter to make an encrypted executable.
 
 @echo off
-
 setlocal enabledelayedexpansion	
 setlocal enableextensions
+
 set logfilepth=%Appdata%\EnrollmentAssistant\log.log
 set curdir=%~dp0
 set enrolledpromptstr=It appears as though this machine is already enrolled to an MDM. Plese check under account settings.
@@ -38,12 +37,9 @@ set customernm=
 
 :main
 	
-	echo [%date% - %time%] -- ============== Starting new session. ============== >> %logfilepth%
-
-	:: verifies .msi installer existence, calls label depending on outcome
-	
 	md "%AppData%\EnrollmentAssistant"
-	
+	echo [%date% - %time%] -- ============== Starting new session. ============== >> %logfilepth%
+	:: verifies .msi installer existence, calls label depending on outcome
 	if exist "%userprofile%\downloads\AirWatchAgent.msi" (
 		echo [%date% - %time%] -- 'AirWatchAgent.msi' was found in User 'download' directory. Moving to '%curdir%'... >> %logfilepth%
 		move "%userprofile%\downloads\AirWatchAgent.msi" "%curdir%"
@@ -60,7 +56,6 @@ set customernm=
 	)
 
 	:: verifies if the machine is already enrolled to AirWatch by reg query
-
 	reg query > nul HKLM\Software\AirWatch /t REG_BINARY /v awsecure
 	if not %errorlevel%==0 (
 		echo [%date% - %time%] -- 'AirWatchAgent.msi' is present. Reg key 'awsecure' not present- Machine is not enrolled. >> %logfilepth%
@@ -77,18 +72,13 @@ set customernm=
 :enrolledprompt
 
 	:: prints a prompt in case function 'main' determines the computer as already enrolled to AirWatch
-
 	echo wscript.quit MsgBox ("%enrolledpromptstr%", 6, "An error occured") > %temp%\enrolledprompt.vbs
 	wscript //nologo %temp%\enrolledprompt.vbs
-	del %temp%\enrolledprompt.vbs
-	
-	endlocal
-	exit
+	del %temp%\enrolledprompt.vbs && call :quitr
 
 :initprompt
 
 	:: prints a 'Y/N' prompt to proceed in case function 'main' determines the computer as not enrolled.
-
 	echo wscript.quit MsgBox ("%initpromptmsgstr%", 4, "Enrollment to %customernm%'s AirWatch") > %temp%\initprompt.vbs
 	wscript //nologo %temp%\initprompt.vbs
 	set value=%errorlevel%
@@ -100,14 +90,11 @@ set customernm=
 			
 	) else (
 		echo [%date% - %time%] -- User denied enrollment, exiting and deleting temp files... >> %logfilepth%
-		del %temp%\initprompt.vbs
-		endlocal
-		exit
+		del %temp%\initprompt.vbs && call :quitr
 	)
 
 	timeout > nul /t 120
 	reg query > nul HKLM\Software\AirWatch /t REG_BINARY /v awsecure
-	
 	if not %errorlevel%==0 (
 		call :error
 		
@@ -119,21 +106,15 @@ set customernm=
 :error
 
 	:: Called in case of error during the installation using data from regkey query 
-	
 	echo [%date% - %time%] -- ERROR: Enrollment failed, the process timed out. Check credentials for enrollment user, Group ID, server adress and reachability and internet connection. >> %logfilepth%
 	echo wscript.quit MsgBox ("%errstr%", 6, "An error occured") > %temp%\error.vbs
 	wscript //nologo %temp%\error.vbs
-	
 	del %temp%\error.vbs
-	del %temp%\initprompt.vbs
-
-	endlocal
-	exit
+	del %temp%\initprompt.vbs && call :quitr
 
 :error_notfound
 
 	:: called in case the 'AirWatchAgent.msi' file is not found in current execution directory
-	
 	echo [%date% - %time%] -- The 'AirWatchAgent.msi' file was not found in %curdir% nor in user download directory. Prompting for download... >> %logfilepth%
 	echo wscript.quit MsgBox ("%errnotfoundstr%", 4, "Missing file") > %temp%\errnotfound.vbs
 	wscript //nologo %temp%\errnotfound.vbs
@@ -143,26 +124,23 @@ set customernm=
 		echo [%date% - %time%] -- User acknowledged download, browser windows will open and user will option to save the file.  Exiting... >> %logfilepth%
 		start https://www.awagent.com/Home/DownloadWinPcAgentApplication
 		del %temp%\errnotfound.vbs
-		endlocal
-		exit
+		call :quitr
 		
 	) else (
-	
 		echo [%date% - %time%] -- User denied download. Exiting...  >> %logfilepth%
-		del %temp%\errnotfound.vbs
-		endlocal
-		exit
+		del %temp%\errnotfound.vbs && call :quitr
 	)
 
 :successprompt
 
 	:: prompts user that the enrollment was successful
-	
 	echo [%date% - %time%] -- Device enrolled successfully and is now connected to %server%. Exiting and deleting temp files. >> %logfilepth%
 	echo wscript.quit MsgBox ("%successstr%", 6, "Enrollment successful!") > %temp%\success.vbs
 	wscript //nologo %temp%\success.vbs
 	timeout > nul /t 15
 	del %temp%\success.vbs
+
+:quitr
+
 	endlocal
 	exit
-
