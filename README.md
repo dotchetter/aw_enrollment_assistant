@@ -1,4 +1,6 @@
 # aw_enrollment_assistant
+## Notice: This project is depricated and is not being maintained. Use at your own discretion.
+
 Batch-file tool to automate agent enrollment for Windows to Airwatch
 
 Language in prompts: English
@@ -18,5 +20,5 @@ How to use
    Read available switches here: 
    https://docs.vmware.com/en/VMware-AirWatch/9.1/vmware-airwatch-guides-91/GUID-AW91-Enroll_SilentCommands.html
 
-2. Save this source file and run it with elevated permissions. 
+2. Save the source file main.cmd and run it with elevated permissions. 
    The script will detect if you need to download the agent file or not.			
