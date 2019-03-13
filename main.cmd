@@ -1,3 +1,24 @@
+:: MIT License
+
+:: Copyright (c) 2018 
+
+:: Permission is hereby granted, free of charge, to any person obtaining a copy
+:: of this software and associated documentation files (the "Software"), to deal
+:: in the Software without restriction, including without limitation the rights
+:: to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+:: copies of the Software, and to permit persons to whom the Software is
+:: furnished to do so, subject to the following conditions:
+
+:: The above copyright notice and this permission notice shall be included in all
+:: copies or substantial portions of the Software.
+
+:: THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+:: IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+:: FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+:: AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+:: LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+:: OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+:: SOFTWARE.
 
 :: Enrolls unit to VMWare Workspace ONE UEM formely known as 'AirWatch' as a staging user.
 :: Edit desired enrollment scenario using the staging user from the AirWatch console. 
@@ -36,21 +57,20 @@ set groupID=
 set customernm=
 
 :main
-	
 	md "%AppData%\EnrollmentAssistant"
 	echo [%date% - %time%] -- ============== Starting new session. ============== >> %logfilepth%
+	
 	:: verifies .msi installer existence, calls label depending on outcome
 	if exist "%userprofile%\downloads\AirWatchAgent.msi" (
 		echo [%date% - %time%] -- 'AirWatchAgent.msi' was found in User 'download' directory. Moving to '%curdir%'... >> %logfilepth%
 		move "%userprofile%\downloads\AirWatchAgent.msi" "%curdir%"
-	
 	) else (
 		if exist "%curdir%\AirWatchAgent.msi" (
 			echo [%date% - %time%] -- 'AirWatchAgent.msi' was found in '%curdir%'... >> %logfilepth%
 	
 		) else (
 			if not exist "%curdir%\AirWatchAgent.msi" (
-			call :error_notfound		
+				call :error_notfound		
 			)
 		)
 	)
@@ -60,24 +80,20 @@ set customernm=
 	if not %errorlevel%==0 (
 		echo [%date% - %time%] -- 'AirWatchAgent.msi' is present. Reg key 'awsecure' not present- Machine is not enrolled. >> %logfilepth%
 		call :initprompt
-	
 	) else (
-
 		if %errorlevel%==0 (
 			echo [%date% - %time%] -- The machine appears to already be enrolled to AirWatch. RegKey 'HKLM\Software\AirWatch\awsecure' is present in registry. Exiting...>> %logfilepth%
 			call :enrolledprompt
-			)
 		)
+	)
 
 :enrolledprompt
-
 	:: prints a prompt in case function 'main' determines the computer as already enrolled to AirWatch
 	echo wscript.quit MsgBox ("%enrolledpromptstr%", 6, "An error occured") > %temp%\enrolledprompt.vbs
 	wscript //nologo %temp%\enrolledprompt.vbs
 	del %temp%\enrolledprompt.vbs && call :quitr
 
 :initprompt
-
 	:: prints a 'Y/N' prompt to proceed in case function 'main' determines the computer as not enrolled.
 	echo wscript.quit MsgBox ("%initpromptmsgstr%", 4, "Enrollment to %customernm%'s AirWatch") > %temp%\initprompt.vbs
 	wscript //nologo %temp%\initprompt.vbs
@@ -97,14 +113,12 @@ set customernm=
 	reg query > nul HKLM\Software\AirWatch /t REG_BINARY /v awsecure
 	if not %errorlevel%==0 (
 		call :error
-		
 	) else (
 		call :successprompt
 		del %temp%\initprompt.vbs
 	)
 
 :error
-
 	:: Called in case of error during the installation using data from regkey query 
 	echo [%date% - %time%] -- ERROR: Enrollment failed, the process timed out. Check credentials for enrollment user, Group ID, server adress and reachability and internet connection. >> %logfilepth%
 	echo wscript.quit MsgBox ("%errstr%", 6, "An error occured") > %temp%\error.vbs
@@ -113,7 +127,6 @@ set customernm=
 	del %temp%\initprompt.vbs && call :quitr
 
 :error_notfound
-
 	:: called in case the 'AirWatchAgent.msi' file is not found in current execution directory
 	echo [%date% - %time%] -- The 'AirWatchAgent.msi' file was not found in %curdir% nor in user download directory. Prompting for download... >> %logfilepth%
 	echo wscript.quit MsgBox ("%errnotfoundstr%", 4, "Missing file") > %temp%\errnotfound.vbs
@@ -125,14 +138,12 @@ set customernm=
 		start https://www.awagent.com/Home/DownloadWinPcAgentApplication
 		del %temp%\errnotfound.vbs
 		call :quitr
-		
 	) else (
 		echo [%date% - %time%] -- User denied download. Exiting...  >> %logfilepth%
 		del %temp%\errnotfound.vbs && call :quitr
 	)
 
 :successprompt
-
 	:: prompts user that the enrollment was successful
 	echo [%date% - %time%] -- Device enrolled successfully and is now connected to %server%. Exiting and deleting temp files. >> %logfilepth%
 	echo wscript.quit MsgBox ("%successstr%", 6, "Enrollment successful!") > %temp%\success.vbs
@@ -141,6 +152,5 @@ set customernm=
 	del %temp%\success.vbs
 
 :quitr
-
 	endlocal
 	exit
